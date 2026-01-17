@@ -200,51 +200,93 @@ app.get('/upload', isLoggedIn, (req, res) => {
 });
 
 // -------------UPLOAD POST ROUTE ----------------//
+// app.post("/upload", isLoggedIn, multer.array("photos"), async (req, res) => {
+//     try {
+//         const files = req.files;
+//         const description = req.body.description || "";
+
+//         if (!files || files.length === 0) {
+//             req.session.error = "No files selected!";
+//             return res.redirect("/gallery");
+//         }
+
+//         const user = req.user;
+//         const imageCount = await imageModel.countDocuments({ userId: user._id });
+
+
+//         //--=Rwstrict free users---//
+//         if (!user.isPremium && imageCount + files.length > 6) {
+
+//             files.forEach(file => {
+//                 fs.unlinkSync(file.path); //  remove files
+//             });
+//             req.flash("error", "Free limit reached ! Buy premium to upload more.");
+//             return res.redirect("/premium");
+//         }
+
+//         // Create and save all image documents
+//         const uploadPromises = files.map((file) => {
+//             const newImage = new imageModel({
+//                 userId: req.user._id,
+//                 filePath: `/images/uploads/${file.filename}`,
+//                 description: description,
+//                 fileMimeType: file.mimetype,
+//                 originalFilename: file.originalname
+//             });
+//             return newImage.save();
+//         });
+
+//         await Promise.all(uploadPromises);
+
+//         req.flash("success", `${files.length} image uploaded successfully!`);
+//         return res.redirect("/gallery");
+
+//     } catch (err) {
+//         console.error("Error uploading images:", err);
+//         req.flash("error", "Something went wrong while uploading images!");
+//         return res.redirect("/gallery");
+//     }
+// });
+
+
 app.post("/upload", isLoggedIn, multer.array("photos"), async (req, res) => {
     try {
         const files = req.files;
         const description = req.body.description || "";
 
         if (!files || files.length === 0) {
-            req.session.error = "No files selected!";
+            req.flash("error", "No files selected!");
             return res.redirect("/gallery");
         }
 
         const user = req.user;
         const imageCount = await imageModel.countDocuments({ userId: user._id });
 
-
-        //--=Rwstrict free users---//
+        // Restrict free users
         if (!user.isPremium && imageCount + files.length > 6) {
-
             files.forEach(file => {
-                fs.unlinkSync(file.path); //  remove files
+                if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
             });
-            req.flash("error", "Free limit reached ! Buy premium to upload more.");
+            req.flash("error", "Free limit reached! Buy premium to upload more.");
             return res.redirect("/premium");
         }
 
-        // Create and save all image documents
-        const uploadPromises = files.map((file) => {
-            const newImage = new imageModel({
-                userId: req.user._id,
-                filePath: `/images/uploads/${file.filename}`,
-                description: description,
-                fileMimeType: file.mimetype,
-                originalFilename: file.originalname
-            });
-            return newImage.save();
-        });
+        // Save images to DB
+        await Promise.all(files.map(file => new imageModel({
+            userId: user._id,
+            filePath: `/images/uploads/${file.filename}`,
+            description,
+            fileMimeType: file.mimetype,
+            originalFilename: file.originalname
+        }).save()));
 
-        await Promise.all(uploadPromises);
-
-        req.flash("success", `${files.length} image uploaded successfully!`);
-        return res.redirect("/gallery");
+        req.flash("success", `${files.length} image(s) uploaded successfully!`);
+        res.redirect("/gallery");
 
     } catch (err) {
         console.error("Error uploading images:", err);
         req.flash("error", "Something went wrong while uploading images!");
-        return res.redirect("/gallery");
+        res.redirect("/gallery");
     }
 });
 
@@ -276,26 +318,39 @@ app.post('/update-profile', isLoggedIn, multer.single("profilepic"), async (req,
     }
 });
 
-//----------------Gallery Iamge Edit Route -----------------//
+
+
+//----------------Gallery Image Edit Route -----------------//
 // app.post('/edit-image/:id', isLoggedIn, multer.single("imageFile"), async (req, res) => {
 //     try {
 //         const imageId = req.params.id;
-//         const newDescription = req.body.newDescription || "";
+//         // Use 'description' or 'newDescription' depending on your HTML name attribute
+//         const newDescription = req.body.newDescription || req.body.description || "";
 //         const image = await imageModel.findOne({ _id: imageId, userId: req.user._id });
 
 //         if (!image) {
-//             req.flash("error", "Image not found or you don't have permission to edit it.");
+//             req.flash("error", "Image not found or permission denied.");
 //             return res.redirect("/gallery");
 //         }
 
-//         // Update description if provided
 //         if (newDescription !== "") {
 //             image.description = newDescription;
 //         }
 
-//         // Update image file if provided
 //         if (req.file) {
-//             fs.unlinkSync(image.filePath); // Remove old file
+//             // FIX: Construct the correct absolute path to the file
+//             // __dirname is C:\Users\hp\...\sGram
+//             // image.filePath is /images/uploads/filename.jpg
+//             const fullPath = path.join(__dirname, 'public', image.filePath);
+
+//             // Check if file exists before trying to delete it to avoid ENOENT error
+//             if (fs.existsSync(fullPath)) {
+
+//                 fs.unlinkSync(fullPath);
+//             } else {
+//                 console.warn("File not found on disk, skipping deletion:", fullPath);
+//             }
+
 //             image.filePath = `/images/uploads/${req.file.filename}`;
 //         }
 
@@ -309,35 +364,29 @@ app.post('/update-profile', isLoggedIn, multer.single("profilepic"), async (req,
 //     }
 // });
 
-//----------------Gallery Image Edit Route -----------------//
 app.post('/edit-image/:id', isLoggedIn, multer.single("imageFile"), async (req, res) => {
     try {
         const imageId = req.params.id;
-        // Use 'description' or 'newDescription' depending on your HTML name attribute
         const newDescription = req.body.newDescription || req.body.description || "";
-        const image = await imageModel.findOne({ _id: imageId, userId: req.user._id });
 
+        const image = await imageModel.findOne({ _id: imageId, userId: req.user._id });
         if (!image) {
             req.flash("error", "Image not found or permission denied.");
             return res.redirect("/gallery");
         }
 
-        if (newDescription !== "") {
-            image.description = newDescription;
-        }
+        // Update description
+        if (newDescription.trim() !== "") image.description = newDescription.trim();
 
+        // Update file if provided
         if (req.file) {
-            // FIX: Construct the correct absolute path to the file
-            // __dirname is C:\Users\hp\...\sGram
-            // image.filePath is /images/uploads/filename.jpg
-            const fullPath = path.join(__dirname, 'public', image.filePath);
+            const oldFilePath = path.join(__dirname, "../public", image.filePath);
 
-            // Check if file exists before trying to delete it to avoid ENOENT error
-            if (fs.existsSync(fullPath)) {
-
-                fs.unlinkSync(fullPath);
+            // Only delete if file exists
+            if (fs.existsSync(oldFilePath)) {
+                fs.unlinkSync(oldFilePath);
             } else {
-                console.warn("File not found on disk, skipping deletion:", fullPath);
+                console.warn("Old image file not found, skipping deletion:", oldFilePath);
             }
 
             image.filePath = `/images/uploads/${req.file.filename}`;
@@ -345,13 +394,15 @@ app.post('/edit-image/:id', isLoggedIn, multer.single("imageFile"), async (req, 
 
         await image.save();
         req.flash("success", "Image updated successfully!");
-        return res.redirect("/gallery");
+        res.redirect("/gallery");
+
     } catch (err) {
-        console.error(err);
+        console.error("Error editing image:", err);
         req.flash("error", "Something went wrong while editing the image!");
-        return res.redirect("/gallery");
+        res.redirect("/gallery");
     }
 });
+
 // ----------------View Image Route-----------------//
 app.get('/view-image/:id', isLoggedIn, async (req, res) => {
     try {
@@ -385,7 +436,7 @@ app.post('/delete-image/:id', isLoggedIn, async (req, res) => {
         if (!image) {
             req.flash("error", "Image not found or permission denied.");
             return res.redirect("/gallery");
-        }       
+        }
 
         // Delete the image file from the server
         const fullPath = path.join(__dirname, 'public', image.filePath);
@@ -405,18 +456,18 @@ app.post('/delete-image/:id', isLoggedIn, async (req, res) => {
 
 
 
-    // premium route
-    app.get('/premium', isLoggedIn, (req, res) => {
-        res.render('premium');
-    });
+// premium route
+app.get('/premium', isLoggedIn, (req, res) => {
+    res.render('premium');
+});
 
-    // logout route
-    app.post('/logout', isLoggedIn, (req, res) => {
-        res.clearCookie('token');
-        req.flash("success", "You have been logged out successfully.");
-        res.redirect("/");
-    });
+// logout route
+app.post('/logout', isLoggedIn, (req, res) => {
+    res.clearCookie('token');
+    req.flash("success", "You have been logged out successfully.");
+    res.redirect("/");
+});
 
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
-    });
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
