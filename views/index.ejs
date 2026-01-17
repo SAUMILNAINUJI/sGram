@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Management</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* ======================== BLUE/GREEN THEME COLORS ======================== */
+        :root {
+            --primary-color: #3498DB;
+            /* Standard Blue for Login Button */
+            --secondary-color: #2C3E50;
+            /* Deep Navy for Header/Accent */
+            --login-button-hover: #2980B9;
+            /* Darker Blue on hover */
+
+            /* Green for Sign Up Button (Bootstrap Success Color) */
+            --signup-button-color: #198754;
+            --signup-button-hover: #157347;
+
+            --background-start: #F4F6F8;
+            --background-end: #E9ECF0;
+            --card-bg-color: #ffffff;
+            --shadow: 0 15px 45px rgba(0, 0, 0, 0.15);
+            --border-radius: 16px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--background-start), var(--background-end));
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+
+        .auth-card {
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: none;
+            overflow: hidden;
+            max-width: 450px;
+            width: 100%;
+            background-color: var(--card-bg-color);
+        }
+
+        .card-header {
+            background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
+            color: white;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .btn-auth {
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-auth:hover {
+            background-color: var(--login-button-hover);
+            border-color: var(--login-button-hover);
+            color: #fff;
+        }
+
+        .btn-auth.btn-signup {
+            background-color: var(--signup-button-color);
+            border-color: var(--signup-button-color);
+        }
+
+        .btn-auth.btn-signup:hover {
+            background-color: var(--signup-button-hover);
+            border-color: var(--signup-button-hover);
+        }
+
+        .toggle-link {
+            color: var(--secondary-color);
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .toggle-link:hover {
+            color: var(--primary-color);
+        }
+
+        .signup-field {
+            display: none;
+        }
+
+        .is-signup .signup-field {
+            display: block;
+        }
+
+        ::selection {
+            background-color: red;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <% if (error && error.length> 0) { %>
+        <div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3 w-75 text-center"
+            role="alert" id="popup-alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <%= error[0] %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <% } %>
+
+
+            <% if (success && success.length> 0) { %>
+                <div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3 w-75 text-center"
+                    role="alert" id="popup-alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <%= success[0] %>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <% } %>
+
+                    <div class="auth-card" id="authCard">
+                        <div class="card-header">
+                            <i class="fas fa-camera-retro me-2"></i> Secure Photo Access
+                        </div>
+                        <div class="card-body p-4 p-md-5">
+
+                            <h3 class="text-center mb-4" id="form-title">Login to your Account</h3>
+
+                            <form action="/login" method="POST" id="authForm">
+
+                                <div class="form-floating mb-3 signup-field">
+                                    <input type="text" class="form-control" id="signupUsername" placeholder="Username"
+                                        name="username">
+                                    <label for="signupUsername"><i class="fas fa-user-circle me-2"></i> Username</label>
+                                </div>
+
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="loginIdentifier"
+                                        placeholder="Username or Email" name="loginIdentifier" required>
+                                    <label for="loginIdentifier" id="loginIdentifierLabel">
+                                        <i class="fas fa-user me-2"></i> Username or Email
+                                    </label>
+                                </div>
+
+                                <div class="form-floating mb-4">
+                                    <input type="password" class="form-control" id="password" placeholder="Password"
+                                        name="password" required>
+                                    <label for="password"><i class="fas fa-key me-2"></i> Password</label>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-auth w-100" id="submit-button">
+                                        <i class="fas fa-sign-in-alt me-2"></i> Login
+                                    </button>
+                                </div>
+
+                            </form>
+                        </div>
+
+                        <div class="card-footer text-center p-3 border-0 bg-light">
+                            <small class="text-muted">
+                                <span id="toggle-text">Don't have an account?</span>
+                                <a href="#" class="toggle-link" id="toggle-auth">Sign Up Here</a>
+                            </small>
+                        </div>
+                    </div>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const authCard = document.getElementById('authCard');
+                            const authForm = document.getElementById('authForm');
+                            const formTitle = document.getElementById('form-title');
+                            const submitButton = document.getElementById('submit-button');
+                            const toggleAuth = document.getElementById('toggle-auth');
+                            const toggleText = document.getElementById('toggle-text');
+
+                            // Fields to toggle on/off
+                            const signupUsernameField = document.getElementById('signupUsername');
+                            const loginIdentifierField = document.getElementById('loginIdentifier');
+                            const loginIdentifierLabel = document.getElementById('loginIdentifierLabel');
+
+                            let isLogin = true;
+
+                            // Function to manage field visibility and labels
+                            function updateFormState(isLoginMode) {
+                                if (isLoginMode) {
+                                    // --- Login Mode (Blue Button) ---
+                                    authCard.classList.remove('is-signup');
+                                    formTitle.textContent = 'Login to your Account';
+                                    authForm.setAttribute('action', '/login');
+                                    submitButton.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i> Login';
+                                    toggleText.textContent = "Don't have an account?";
+                                    toggleAuth.textContent = 'Sign Up Here';
+                                    submitButton.classList.remove('btn-signup');
+
+                                    // Input is for Username OR Email
+                                    loginIdentifierField.setAttribute('name', 'loginIdentifier');
+                                    loginIdentifierField.setAttribute('placeholder', 'Username or Email');
+                                    loginIdentifierLabel.innerHTML = '<i class="fas fa-user me-2"></i> Username or Email';
+
+                                    // Signup-only fields not required
+                                    signupUsernameField.removeAttribute('required');
+
+
+                                } else {
+                                    // --- Sign Up Mode (Green Button) ---
+                                    authCard.classList.add('is-signup');
+                                    formTitle.textContent = 'Create Your New Account';
+                                    authForm.setAttribute('action', '/signup');
+                                    submitButton.innerHTML = '<i class="fas fa-user-plus me-2"></i> Sign Up';
+                                    toggleText.textContent = "Already have an account?";
+                                    toggleAuth.textContent = 'Log In Here';
+                                    submitButton.classList.add('btn-signup');
+
+                                    // Input is explicitly for Email
+                                    loginIdentifierField.setAttribute('name', 'email'); // Change name back to 'email' for the server
+                                    loginIdentifierField.setAttribute('placeholder', 'Email Address');
+                                    loginIdentifierLabel.innerHTML = '<i class="fas fa-envelope me-2"></i> Email Address';
+
+                                    // Signup-only fields are now required
+                                    signupUsernameField.setAttribute('required', '');
+                                }
+                            }
+
+                            // Initial state setup (default is Login)
+                            updateFormState(true);
+
+                            // Event Listener to toggle state
+                            toggleAuth.addEventListener('click', function (e) {
+                                e.preventDefault();
+                                isLogin = !isLogin;
+                                updateFormState(isLogin);
+                            });
+
+                            // Auto hide alert after 3 seconds
+                            const alert = document.getElementById('popup-alert');
+                            if (alert) {
+                                setTimeout(() => {
+                                    alert.style.transition = 'opacity 0.5s';
+                                    alert.style.opacity = '0';
+                                    setTimeout(() => alert.remove(), 500);
+                                }, 3000);
+                            }
+                        });
+                    </script>
+
+                    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

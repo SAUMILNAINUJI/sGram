@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View | sGram</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/stylesheets/navbar.css">
+    <link rel="stylesheet" href="/stylesheets/flash.css">
+
+    <style>
+        .image-view-container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-top: 50px;
+            margin-bottom: 50px;
+        }
+
+        .view-img {
+            width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-details {
+            margin-top: 25px;
+        }
+
+        .image-details h2 {
+            color: var(--secondary-color);
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        .back-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background-color: #1a252f;
+            color: white;
+        }
+
+        .btn-delete-theme {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-delete-theme:hover {
+            background-color: #C0392B;
+            border-color: #C0392B;
+            color: white;
+        }
+
+        .uploader-box {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background-color: #f7f9fb;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .uploader-box img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-color);
+        }
+
+        @media (max-width: 576px) {
+            .image-view-container {
+                padding: 20px;
+                margin-top: 30px;
+            }
+
+            .view-img {
+                max-height: 300px;
+            }
+        }
+
+        /* Modal animation */
+        .modal-content {
+            animation: scaleIn 0.2s ease;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <%- include('partials/navbar', { activePage: 'view' }) %>
+
+        <!-- FLASH -->
+        <%- include('partials/flash') %>
+
+            <!-- MAIN CONTENT -->
+            <div class="container image-view-container">
+
+                <img src="<%= image.filePath %>" alt="Uploaded Image" class="view-img">
+
+                <div class="image-details">
+                    <h2 class="mt-3">
+                        <%= image.description %>
+                    </h2>
+
+                    <p class="text-muted mb-1">
+                        <i class="far fa-calendar-alt me-2"></i>
+                        Uploaded on: <%= image.createdAt.toLocaleString() %>
+                    </p>
+
+                    <p class="text-muted mb-1">
+                        <i class="far fa-calendar-alt me-2"></i>
+                        Updated on: <%= image.updatedAt.toLocaleString() %>
+                    </p>
+
+                    <!-- UPLOADER INFO -->
+                    <div class="uploader-box">
+                        <% if (image.userId && image.userId.profilepic) { %>
+                            <img src="/images/uploads/<%= image.userId.profilepic %>" alt="Uploader">
+                            <% } else { %>
+                                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Default User">
+                                <% } %>
+
+                                    <div>
+                                        <h6 class="mb-0">
+                                            <%= image.userId ? image.userId.username : 'Unknown User' %>
+                                        </h6>
+                                        <small class="text-muted">
+                                            <%= image.userId ? image.userId.email : '' %>
+                                        </small>
+                                    </div>
+                    </div>
+
+                    <!-- ACTION BUTTONS -->
+                    <div class="mt-4 d-flex flex-wrap gap-2">
+                        <a href="/gallery" class="btn back-btn">
+                            <i class="fas fa-arrow-left me-1"></i> Back to Gallery
+                        </a>
+
+                        <button class="btn btn-delete-theme" data-bs-toggle="modal"
+                            data-bs-target="#deleteConfirmModal">
+                            <i class="fas fa-trash-alt me-1"></i> Delete Image
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DELETE CONFIRM MODAL -->
+            <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg rounded-4">
+
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i> Delete Image
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+
+                        <div class="modal-body text-center">
+                            <p class="fw-semibold mb-2">
+                                Are you sure you want to delete this image?
+                            </p>
+                            <p class="text-muted mb-0">
+                                This action <strong>cannot be undone</strong>.
+                            </p>
+                        </div>
+
+                        <div class="modal-footer">
+                            <div class="d-flex w-100 gap-2">
+                                <button type="button" class="btn btn-outline-secondary flex-fill"
+                                    data-bs-dismiss="modal">
+                                    Cancel
+                                </button>
+
+                                <form action="/delete-image/<%= image._id %>" method="POST" class="flex-fill">
+                                    <button type="submit" class="btn btn-delete-theme w-100">
+                                        Yes, Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bootstrap JS -->
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

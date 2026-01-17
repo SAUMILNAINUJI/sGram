@@ -1,0 +1,95 @@
+:root {
+    --primary-color: #3498db;
+    --secondary-color: #1f2a37;
+    --nav-hover: #3fa9f5;
+    --nav-active-bg: rgba(255, 255, 255, 0.15);
+    --edit-color: #f39c12;
+    --premium-color: #f1c40f;
+    --danger-color: #dc3545;
+    --success-color: #2ECC71;
+}
+
+.navbar {
+    padding: 0.8rem 1rem;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar-brand {
+    font-weight: 800;
+    font-size: 1.4rem;
+    letter-spacing: 0.5px;
+    color: #fff !important;
+    transition: transform 0.2s ease;
+}
+
+.navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 600;
+    padding: 0.55rem 1rem;
+    border-radius: 8px;
+    transition: all 0.25s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    background-color: var(--nav-active-bg);
+    color: #fff;
+}
+
+.navbar-nav .nav-link.active {
+    background-color: var(--primary-color);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.5);
+}
+
+.btn-premium-theme {
+    background: linear-gradient(135deg, #f1c40f, #f39c12);
+    color: #1f2a37 !important;
+    font-weight: 700;
+    border-radius: 20px;
+    padding: 0.4rem 1.2rem;
+    border: none;
+    transition: all 0.25s ease;
+}
+
+.badge {
+    background-color: var(--premium-color); 
+    color: var(--secondary-color); 
+    font-weight: 700;
+    border-radius: 20px;
+    letter-spacing: 0.8px;
+    box-shadow: 0 4px 15px rgba(241, 196, 15, 0.4);
+}
+
+.btn-danger {
+    border-radius: 20px;
+    padding: 0.35rem 1.2rem;
+    font-weight: 600;
+    transition: all 0.25s ease;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background-color: var(--secondary-color);
+        padding: 1rem 0;
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 0.8rem;
+        margin-bottom: 2px;
+    }
+
+    .btn-premium-theme, .btn-danger {
+        padding: 0.6rem;
+        margin-top: 5px;
+    }
+    
+    /* Ensure the badge looks good on mobile */
+    .badge {
+        width: 100%;
+        text-align: center;
+    }
+}
