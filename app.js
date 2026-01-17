@@ -159,24 +159,48 @@ app.post('/login', async (req, res) => {
 
 
 //gallery route
+// app.get('/gallery', isLoggedIn, async (req, res) => {
+
+//     try {
+//         // 1. Fetch all photos belonging to the logged-in user (req.user is set by middleware)
+//         const photos = await imageModel.find({ userId: req.user._id })
+//             .sort({ uploadDate: -1 }); // Display newest photos first
+
+//         // 2. Render the dashboard, passing the fetched photos and messages
+//         res.render("gallery", {
+//             currentPath: '/gallery',
+
+//             images: photos, // Pass the real photo data
+//             moment
+//         });
+
+//     } catch (e) {
+//         console.error("Error fetching dashboard photos:", e);
+//         req.flash("error", "Could not load photos. Please try again.");
+//         res.redirect("/gallery");
+//     }
+// });
+
 app.get('/gallery', isLoggedIn, async (req, res) => {
-
     try {
-        // 1. Fetch all photos belonging to the logged-in user (req.user is set by middleware)
-        const photos = await imageModel.find({ userId: req.user._id })
-            .sort({ uploadDate: -1 }); // Display newest photos first
+        if (!req.user) {
+            req.flash("error", "Session expired. Please login again.");
+            return res.redirect("/login");
+        }
 
-        // 2. Render the dashboard, passing the fetched photos and messages
+        const photos = await imageModel
+            .find({ userId: req.user._id })
+            .sort({ createdAt: -1 }); // or remove if not using timestamps
+
         res.render("gallery", {
-            currentPath: '/gallery',
-
-            images: photos, // Pass the real photo data
+            currentPath: "/gallery",
+            images: photos,
             moment
         });
 
-    } catch (e) {
-        console.error("Error fetching dashboard photos:", e);
-        req.flash("error", "Could not load photos. Please try again.");
+    } catch (err) {
+        console.error("Error fetching gallery:", err);
+        req.flash("error", "Could not load photos.");
         res.redirect("/gallery");
     }
 });
