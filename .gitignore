@@ -14,7 +14,7 @@ yarn-error.log*
 Thumbs.db
 
 # Uploaded images (multer)
-public/images/uploads/
+# public/images/uploads/
 
 # Session files (if any)
 *.log
